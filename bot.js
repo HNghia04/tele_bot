@@ -1,48 +1,65 @@
 const { Telegraf } = require("telegraf");
 const axios = require("axios");
-const express = require("express"); // ✅ Thêm Express
+const express = require("express");
+const { exec } = require("child_process");
 require("dotenv").config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
-
-// ✅ Thay URL webhook bằng đường dẫn Ngrok của bạn
-const N8N_WEBHOOK_URL = "https://c2b8-171-243-49-192.ngrok-free.app";
-
-// ✅ Khởi tạo Web Server để tránh lỗi "Port scan timeout"
-const app = express();
 const PORT = process.env.PORT || 3000;
+let webhookUrl = process.env.WEBHOOK_URL || ""; // Sẽ cập nhật sau khi khởi động Ngrok
 
-app.get("/", (req, res) => {
-    res.send("Bot Telegram đang chạy...");
-});
+const app = express();
+app.use(express.json());
 
-// ✅ Lắng nghe cổng để Render không bị lỗi
-app.listen(PORT, () => {
-    console.log(`🌍 Server đang chạy trên cổng ${PORT}`);
-});
+// 1️⃣ **API nhận tin nhắn từ Telegram & gửi đến n8n**
+app.post("/webhook/telegram-bot", async (req, res) => {
+    const message = req.body.message;
+    if (message) {
+        console.log("📩 Tin nhắn từ Telegram:", message);
 
-bot.start((ctx) => {
-    ctx.reply("Chào mừng bạn đến với bot!");
-});
-
-// ✅ Xử lý tin nhắn từ Telegram & gửi đến n8n
-bot.on("message", async (ctx) => {
-    const message = {
-        user_id: ctx.from.id,
-        username: ctx.from.username,
-        text: ctx.message.text,
-    };
-
-    try {
-        await axios.post(N8N_WEBHOOK_URL, message);
-        console.log("✅ Đã gửi dữ liệu đến n8n:", message);
-    } catch (error) {
-        console.error("❌ Lỗi khi gửi dữ liệu đến n8n:", error.message);
+        // Gửi dữ liệu đến n8n
+        try {
+            await axios.post(process.env.N8N_WEBHOOK_URL, message);
+            console.log("✅ Đã gửi đến n8n");
+        } catch (error) {
+            console.error("❌ Lỗi gửi đến n8n:", error.message);
+        }
     }
-
-    ctx.reply("Tin nhắn của bạn đã được gửi đến n8n!");
+    res.sendStatus(200);
 });
 
-// ✅ Chạy bot
+// 2️⃣ **Khởi động Ngrok để tạo Webhook động**
+function startNgrok() {
+    exec(`ngrok http ${PORT} --log=stdout`, (error, stdout, stderr) => {
+        if (error) {
+            console.error("❌ Lỗi khi chạy Ngrok:", error);
+            return;
+        }
+        if (stderr) {
+            console.error("⚠ Cảnh báo từ Ngrok:", stderr);
+        }
+
+        // Lấy URL Ngrok từ output
+        const urlMatch = stdout.match(/(https:\/\/[a-zA-Z0-9.-]+.ngrok-free.app)/);
+        if (urlMatch) {
+            webhookUrl = `${urlMatch[1]}/webhook/telegram-bot`;
+            console.log("🚀 Ngrok URL:", webhookUrl);
+
+            // Cập nhật Webhook cho Telegram bot
+            bot.telegram.setWebhook(webhookUrl)
+                .then(() => console.log("✅ Webhook đã cập nhật:", webhookUrl))
+                .catch((err) => console.error("❌ Lỗi cập nhật Webhook:", err));
+        }
+    });
+}
+
+// 3️⃣ **Chạy bot Telegram**
+bot.start((ctx) => ctx.reply("🚀 Bot Telegram đã sẵn sàng!"));
 bot.launch();
 console.log("🤖 Bot Telegram đang chạy...");
+
+// 4️⃣ **Chạy Express Server & Ngrok**
+app.listen(PORT, () => {
+    console.log(`🌍 Server chạy tại http://localhost:${PORT}`);
+    startNgrok(); // Gọi hàm khởi động Ngrok sau khi server chạy
+});
