@@ -1,19 +1,15 @@
 {
   "name": "tele_bot",
   "version": "1.0.0",
-  "description": "A Telegram bot using Telegraf",
+  "description": "Bot Telegram kết nối với n8n qua Webhook",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
   },
   "dependencies": {
-    "dotenv": "^16.4.7",
     "telegraf": "^4.12.2",
-    "axios": "^1.6.5",
+    "axios": "^1.5.0",
     "express": "^4.18.2",
-    "ngrok": "^4.3.3"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "dotenv": "^16.3.1"
   }
 }
