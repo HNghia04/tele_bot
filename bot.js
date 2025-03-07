@@ -7,6 +7,9 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 // Thay URL webhook bằng đường dẫn Ngrok của bạn
 const N8N_WEBHOOK_URL = "https://52ca-171-243-49-192.ngrok-free.app";
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
 bot.start((ctx) => {
     ctx.reply("Chào mừng bạn đến với bot!");
 });
