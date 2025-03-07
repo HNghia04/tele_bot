@@ -1,12 +1,19 @@
 {
   "name": "tele_bot",
   "version": "1.0.0",
+  "description": "A Telegram bot using Telegraf",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "telegraf": "^4.12.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "uuid": "^11.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
     "dotenv": "^16.4.7"
   }
 }
