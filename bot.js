@@ -60,6 +60,6 @@ console.log("🤖 Bot Telegram đang chạy...");
 
 // 4️⃣ **Chạy Express Server & Ngrok**
 app.listen(PORT, () => {
-    console.log(`🌍 Server chạy tại http://localhost:${PORT}`);
+    console.log(`🌍 Server chạy tại http://localhost:${process.env.PORT}`);
     startNgrok(); // Gọi hàm khởi động Ngrok sau khi server chạy
 });
