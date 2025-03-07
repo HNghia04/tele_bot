@@ -6,7 +6,7 @@ require("dotenv").config();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // ✅ Thay URL webhook bằng đường dẫn Ngrok của bạn
-const N8N_WEBHOOK_URL = "https://52ca-171-243-49-192.ngrok-free.app";
+const N8N_WEBHOOK_URL = "https://c2b8-171-243-49-192.ngrok-free.app";
 
 // ✅ Khởi tạo Web Server để tránh lỗi "Port scan timeout"
 const app = express();
